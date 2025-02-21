@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card"
 import { ArrowLeft, ChevronRight, Brain, Sparkles, Atom } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-
 interface Question {
   id: number
   status: string

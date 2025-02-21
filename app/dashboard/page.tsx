@@ -1,148 +1,162 @@
+// import OverallSummaryChart from "@/components/dashboard/overall-summary-chart"
+// import SkillPerformanceChart from "@/components/dashboard/skill-performance-chart"
+// import DifficultyPerformanceChart from "@/components/dashboard/difficulty-performance-chart"
+// import TimeAnalysisChart from "@/components/dashboard/time-analysis-chart"
+// import CategoryPerformanceChart from "@/components/dashboard/category-performance-chart"
+// import ScoreBandPerformanceChart from "@/components/dashboard/score-band-performance-chart"
+// import ProgressChart from "@/components/dashboard/progress-chart"
+
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import dynamic from "next/dynamic"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Trophy, Clock, Brain, Target } from "lucide-react"
+import OverallSummaryChart from "@/components/dashboard/overall-summary-chart"
+import SkillPerformanceChart from "@/components/dashboard/skill-performance-chart"
+import DifficultyPerformanceChart from "@/components/dashboard/difficulty-performance-chart"
+import TimeAnalysisChart from "@/components/dashboard/time-analysis-chart"
+import CategoryPerformanceChart from "@/components/dashboard/category-performance-chart"
+import ScoreBandPerformanceChart from "@/components/dashboard/score-band-performance-chart"
+import ProgressChart from "@/components/dashboard/progress-chart"
+import { BookOpen, Brain, Clock, Target } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+const sessionData = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : ""
 
-const Chart = dynamic(() => import("react-apexcharts"), { ssr: false, loading: () => <p>Loading chart...</p> })
-
-
-export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+export default function Dashboard() {
+  const [performanceData, setPerformanceData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = document.cookie.replace(/(?:(?:^|.*;\s*)accessToken\s*=\s*([^;]*).*$)|^.*$/, "$1")
-      if (!token) {
-        router.push("/login")
-      } else {
-        setIsLoading(false)
+    const fetchData = async () => {
+      try {
+        const response = await fetch("https://zoogle.projectdaffodil.xyz/api/v1/performance", {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${sessionData}`,
+          },
+        })
+        if (!response.ok) {
+          throw new Error("Network response was not ok")
+        }
+        const data = await response.json()
+        setPerformanceData(data)
+        setLoading(false)
+      } catch (error) {
+        setError(error.message)
+        setLoading(false)
       }
     }
 
-    checkAuth()
-  }, [router])
+    fetchData()
+  }, [])
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>
+  if (error) return <div className="flex items-center justify-center h-screen">Error: {error}</div>
+  if (!performanceData) return <div className="flex items-center justify-center h-screen">No data available</div>
 
-  // Mock data (replace with actual data from your quiz context or API)
-  const quizData = {
-    overallScore: 75,
-    completedTime: "00:45:30",
-    totalCompletions: 5,
-    correctAnswers: 15,
-    incorrectAnswers: 3,
-    unansweredQuestions: 2,
-  }
-
-  const pieChartOptions = {
-    labels: ["Correct", "Incorrect", "Unanswered"],
-    colors: ["#10B981", "#EF4444", "#F59E0B"],
-    legend: {
-      position: "bottom" as const,
-    },
-  }
-
-  const pieChartSeries = [quizData.correctAnswers, quizData.incorrectAnswers, quizData.unansweredQuestions]
-
-  const lineChartOptions = {
-    chart: {
-      id: "score-progress",
-      toolbar: {
-        show: false,
-      },
-    },
-    xaxis: {
-      categories: ["Quiz 1", "Quiz 2", "Quiz 3", "Quiz 4", "Quiz 5"],
-    },
-    stroke: {
-      curve: "smooth" as const,
-    },
-    markers: {
-      size: 5,
-    },
-  }
-
-  const lineChartSeries = [
-    {
-      name: "Score",
-      data: [65, 70, 68, 72, 75],
-    },
-  ]
+  const { overall_summary } = performanceData
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overall Score</CardTitle>
-            <Trophy className="h-4 w-4 text-yellow-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{quizData.overallScore}%</div>
-            <Progress value={quizData.overallScore} className="mt-2" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Time</CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{quizData.completedTime}</div>
-            <p className="text-xs text-muted-foreground">Last quiz duration</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Completions</CardTitle>
-            <Brain className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{quizData.totalCompletions}</div>
-            <p className="text-xs text-muted-foreground">Quizzes taken</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
-            <Target className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {((quizData.correctAnswers / (quizData.correctAnswers + quizData.incorrectAnswers)) * 100).toFixed(1)}%
-            </div>
-            <p className="text-xs text-muted-foreground">Correct answers ratio</p>
-          </CardContent>
-        </Card>
+    <div className="container mx-auto p-4 min-h-screen">
+      {/* <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Performance Dashboard</h1>
+        
+      </div> */}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <StatCard
+          title="Questions Solved"
+          value={overall_summary.solved_questions}
+          total={overall_summary.total_questions}
+          icon={<BookOpen className="h-6 w-6 text-blue-400" />}
+        />
+        <StatCard
+          title="Success Rate"
+          value={overall_summary.success_rate.toFixed(2)}
+          total={100}
+          icon={<Target className="h-6 w-6 text-green-400" />}
+          unit="%"
+        />
+        <StatCard
+          title="Avg. Time"
+          value={Number.parseFloat(overall_summary.avg_time_taken).toFixed(2)}
+          icon={<Clock className="h-6 w-6 text-yellow-400" />}
+          unit="s"
+        />
+        <StatCard
+          title="Total Attempts"
+          value={overall_summary.total_attempts}
+          icon={<Brain className="h-6 w-6 text-purple-400" />}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Answer Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Chart options={pieChartOptions} series={pieChartSeries} type="pie" height={300} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Score Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Chart options={lineChartOptions} series={lineChartSeries} type="line" height={300} />
-          </CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="overall" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2  p-1 rounded-lg">
+          <TabsTrigger value="overall">Overall</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="difficulty">Difficulty</TabsTrigger>
+          <TabsTrigger value="time">Time</TabsTrigger>
+          <TabsTrigger value="category">Category</TabsTrigger>
+          <TabsTrigger value="scoreband">Score Band</TabsTrigger>
+          <TabsTrigger value="progress">Progress</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overall">
+          <OverallSummaryChart data={performanceData.overall_summary} />
+        </TabsContent>
+        <TabsContent value="skills">
+          <SkillPerformanceChart data={performanceData.skill_performance} />
+        </TabsContent>
+        <TabsContent value="difficulty">
+          <DifficultyPerformanceChart data={performanceData.difficulty_performance} />
+        </TabsContent>
+        <TabsContent value="time">
+          <TimeAnalysisChart data={performanceData.time_analysis} />
+        </TabsContent>
+        <TabsContent value="category">
+          <CategoryPerformanceChart data={performanceData.category_performance} />
+        </TabsContent>
+        <TabsContent value="scoreband">
+          <ScoreBandPerformanceChart data={performanceData.score_band_performance} />
+        </TabsContent>
+        <TabsContent value="progress">
+          <ProgressChart
+            daily={performanceData.daily_progress}
+            weekly={performanceData.weekly_progress}
+            monthly={performanceData.monthly_progress}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
+  )
+}
+
+function StatCard({ title, value, total, icon, unit = "" }) {
+  const percentage = total ? (value / total) * 100 : 100
+
+  return (
+    <Card className="">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-sm font-medium text-gray-300">{title}</h2>
+          {icon}
+        </div>
+        <div className="text-2xl font-bold">
+          {value}
+          {unit}
+          {total && (
+            <span className="text-sm text-gray-400 ml-1">
+              /{total}
+              {unit}
+            </span>
+          )}
+        </div>
+        {total && <Progress value={percentage} className="h-1 mt-2" />}
+      </CardContent>
+    </Card>
   )
 }
 
