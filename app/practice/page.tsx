@@ -136,7 +136,7 @@ export default function PracticePage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.1 }}
             >
               <Label className="text-lg font-semibold block text-slate-800 dark:text-slate-200">
                 Select Knowledge Domains
