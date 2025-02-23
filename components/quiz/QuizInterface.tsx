@@ -380,9 +380,11 @@ export default function QuizInterface() {
         )}
       </AnimatePresence>
 
-      <div className="flex-grow overflow-hidden container max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col lg:flex-row gap-2 sm:gap-4 mb-16 lg:mb-0">
+
+        {/* quiz card container */}
+      <div className="flex-grow overflow-hidden container max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col lg:flex-row gap-2 sm:gap-4 mb-3 lg:mb-0">
         <MotionCard
-          className="flex-1 p-2 sm:p-4 overflow-auto lg:max-h-[calc(100vh-16rem)] mb-2 lg:mb-0 border-0 lg:border sm:shadow-none lg:shadow-md"
+          className="flex-1 p-2 sm:p-4 overflow-auto lg:max-h-[calc(100vh-14rem)] max-h-screen mb-2 lg:mb-0 border-0 lg:border sm:shadow-none lg:shadow-md"
           variants={fadeIn}
           initial="initial"
           animate="animate"
@@ -399,7 +401,7 @@ export default function QuizInterface() {
         )}
 
         <MotionCard
-          className="flex-1 p-2 sm:p-4 overflow-auto lg:max-h-[calc(100vh-16rem)]"
+          className="flex-1 p-2 sm:p-4 md:overflow-auto lg:max-h-[calc(100vh-14rem)] max-h-screen"
           variants={fadeIn}
           initial="initial"
           animate="animate"
@@ -592,13 +594,13 @@ export default function QuizInterface() {
                 onClick={() => setIsQuestionMapOpen(true)}
                 className="gap-1 min-w-[140px] font-medium"
               >
-                Question {currentQuestionIndex + 1} of {externalIds.length}
+                <span className="hidden md:block">Question</span> {currentQuestionIndex + 1} of {externalIds.length}
                 <ChevronUp className="h-4 w-4 opacity-50" />
               </Button>
               <div className="flex justify-end">
                 <Button variant="outline" size="sm" onClick={handleStopQuiz} className="flex items-center">
                   <StopCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  Stop Practice
+                  Stop <span className="hidden md:">Practice</span>
                 </Button>
               </div>
             </div>

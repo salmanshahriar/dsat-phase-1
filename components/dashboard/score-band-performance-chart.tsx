@@ -2,8 +2,29 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { BarChart } from "@/components/ui/chart"
 
-const ScoreBandPerformanceChart = ({ data }) => {
-  const chartData = data.map((band) => ({
+// Define the interface for individual score band data from the API
+interface ScoreBandData {
+  score_band: string // e.g., "0-20", "21-40", etc.
+  total_questions: number
+  solved: number
+  success_rate: number
+}
+
+// Define the interface for the chart data structure
+interface ChartData {
+  "Score Band": string
+  "Total Questions": number
+  "Solved Questions": number
+  "Success Rate": number
+}
+
+// Define props interface for the component
+interface ScoreBandPerformanceChartProps {
+  data: ScoreBandData[]
+}
+
+const ScoreBandPerformanceChart = ({ data }: ScoreBandPerformanceChartProps) => {
+  const chartData: ChartData[] = data.map((band) => ({
     "Score Band": band.score_band,
     "Total Questions": band.total_questions,
     "Solved Questions": band.solved,
@@ -19,7 +40,7 @@ const ScoreBandPerformanceChart = ({ data }) => {
           index="Score Band"
           categories={["Total Questions", "Solved Questions", "Success Rate"]}
           colors={["#3b82f6", "#10b981", "#f59e0b"]}
-          valueFormatter={(value) => `${value}`}
+          valueFormatter={(value: number) => `${value}`}
           yAxisWidth={48}
           className="h-[400px]"
         />
@@ -29,4 +50,3 @@ const ScoreBandPerformanceChart = ({ data }) => {
 }
 
 export default ScoreBandPerformanceChart
-

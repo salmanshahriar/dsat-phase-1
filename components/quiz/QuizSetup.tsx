@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, ChevronRight, Brain, Sparkles, Atom } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, ChevronRight, Brain, Sparkles, Atom } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Question {
-  id: number
-  status: string
-  tags: string[]
-  questionCategory: string
-  externalId: string
+  id: number;
+  status: string;
+  tags: string[];
+  questionCategory: string;
+  externalId: string;
   questionInfo: {
-    updateDate: number
-    pPcc: string
-    questionId: string
-    skill_cd: string
-    score_band_range_cd: number
-    uId: string
-    skill_desc: string
-    createDate: number
-    program: string
-    primary_class_cd_desc: string
-    ibn: null | string
-    external_id: string
-    primary_class_cd: string
-    difficulty: "E" | "M" | "H"
-  }
+    updateDate: number;
+    pPcc: string;
+    questionId: string;
+    skill_cd: string;
+    score_band_range_cd: number;
+    uId: string;
+    skill_desc: string;
+    createDate: number;
+    program: string;
+    primary_class_cd_desc: string;
+    ibn: null | string;
+    external_id: string;
+    primary_class_cd: string;
+    difficulty: "E" | "M" | "H";
+  };
 }
 
 const filterOptions = {
@@ -37,14 +37,14 @@ const filterOptions = {
     { label: "Easy", value: "E" },
     { label: "Medium", value: "M" },
     { label: "Hard", value: "H" },
-  ]
-} as const
+  ],
+} as const;
 
 interface QuizSetupProps {
-  subject: string
-  domains: string[]
-  onBack: () => void
-  onStart: () => void
+  subject: string;
+  domains: string[];
+  onBack: () => void;
+  onStart: () => void;
 }
 
 const subjects = {
@@ -62,194 +62,193 @@ const subjects = {
   ],
 } as const;
 
-
-
 export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps) {
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [questionsCount, setQuestionsCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [filters, setFilters] = useState({
-    difficulty: "all",
-  })
-  const [filtering, setFiltering] = useState(false)
-  const sessionData = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : "";
-  
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questionsCount, setQuestionsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({ difficulty: "all" });
+  const [showSkillCheckboxes, setShowSkillCheckboxes] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const sessionData =
+    typeof window !== "undefined"
+      ? document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("session_data="))
+          ?.split("=")[1] || ""
+      : "";
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        setLoading(true)
+        setLoading(true);
         const response = await fetch("https://zoogle.projectdaffodil.xyz/api/v1/getQuestions", {
           method: "POST",
           headers: {
-            "Accept": "application/json",
+            Accept: "application/json",
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${sessionData}`,
+            Authorization: `Bearer ${sessionData}`,
           },
           body: JSON.stringify({
             questionCategory: subject,
             primary_class_cd: domains,
           }),
-        })
+        });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch questions")
-        }
+        if (!response.ok) throw new Error("Failed to fetch questions");
 
-        const data = await response.json()
-        if (!data || !data.questions) {
-          throw new Error("Invalid response structure")
-        }
-        setQuestions(data.questions)
-        setQuestionsCount(data.count)
+        const data = await response.json();
+        if (!data || !data.questions) throw new Error("Invalid response structure");
+        setQuestions(data.questions);
+        setQuestionsCount(data.count);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred")
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    if (subject && domains.length > 0) {
-      fetchQuestions()
-    }
-  }, [subject, domains])
+    if (subject && domains.length > 0) fetchQuestions();
+  }, [subject, domains]);
 
-  // Filter questions based on selected difficulty
-  const filteredQuestions = questions.filter((question) => {
-    if (filters.difficulty === "all") return true;
-    return question.questionInfo.difficulty === filters.difficulty;
-  });
+  const filteredQuestions = questions.filter((question) =>
+    filters.difficulty === "all" || question.questionInfo.difficulty === filters.difficulty
+  );
 
-  // Calculate domain breakdown based on filtered questions
   const domainBreakdown = filteredQuestions.reduce((acc, question) => {
     const domain = question.questionInfo.primary_class_cd;
-    const subdomain = question.questionInfo.skill_desc;
+    const skillCd = question.questionInfo.skill_cd;
+    const skillDesc = question.questionInfo.skill_desc;
 
-    if (!acc[domain]) {
-      acc[domain] = { total: 0, subdomains: {} };
-    }
-
+    if (!acc[domain]) acc[domain] = { total: 0, skills: {} };
     acc[domain].total += 1;
 
-    if (!acc[domain].subdomains[subdomain]) {
-      acc[domain].subdomains[subdomain] = 0;
-    }
-    acc[domain].subdomains[subdomain] += 1;
+    if (!acc[domain].skills[skillCd]) acc[domain].skills[skillCd] = { name: skillDesc, count: 0 };
+    acc[domain].skills[skillCd].count += 1;
 
     return acc;
-  }, {} as Record<string, { total: number; subdomains: Record<string, number> }>);
+  }, {} as Record<string, { total: number; skills: Record<string, { name: string; count: number }> }>);
+
+  const handleSkillSelect = (skillCd: string, checked: boolean) => {
+    setSelectedSkills((prev) => (checked ? [...prev, skillCd] : prev.filter((cd) => cd !== skillCd)));
+  };
+
+  useEffect(() => {
+    localStorage.setItem("selected_skills", JSON.stringify(selectedSkills));
+  }, [selectedSkills]);
 
   const handleStartPractice = () => {
-    // Extract externalIds from filtered questions
-    const externalIds = filteredQuestions.map(question => question.externalId);
-
-    // Store externalIds in local storage
+    const finalQuestions =
+      selectedSkills.length === 0
+        ? filteredQuestions
+        : filteredQuestions.filter((q) => selectedSkills.includes(q.questionInfo.skill_cd));
+    const externalIds = finalQuestions.map((question) => question.externalId);
     localStorage.setItem("questions_externalId_array", JSON.stringify(externalIds));
-
-    // Call the onStart function to proceed
     onStart();
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-500 dark:border-indigo-400"></div>
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500 p-4">
-        <p>{error}</p>
-        <Button onClick={onBack} className="mt-4">
+      <div className="min-h-screen flex flex-col items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-red-500 p-4">
+        <p className="text-sm font-medium">{error}</p>
+        <Button
+          onClick={onBack}
+          className="mt-4 bg-indigo-500 dark:bg-indigo-400 text-white dark:text-slate-900 px-4 py-2 rounded-lg"
+        >
           Go Back
         </Button>
       </div>
-    )
+    );
   }
 
   return (
     <motion.div
-      className="space-y-6 w-full"
+      className="min-h-screen space-y-3 w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4 rounded-lg md:px-6 mb-20 md:mb-0 "
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header with User Info */}
+      {/* Header */}
       <motion.div
-        className="flex items-center justify-between mb-6"
+        className="flex items-center justify-between mb-4"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="gap-2" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        </div>
-        
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg"
+          onClick={onBack}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
       </motion.div>
 
       {/* Quiz Info */}
       <motion.div
-        className="w-full bg-muted rounded-lg px-4 py-3 flex items-center justify-between"
+        className="w-full bg-white dark:bg-slate-800 rounded-lg p-3 flex items-center justify-between shadow-sm border"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <span className="text-sm font-medium">
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           Found {filteredQuestions.length} Questions
         </span>
-
-        <div className="text-sm items-center flex justify-between font-medium">
-          <span className="mr-4 font-medium">Subject: <span className="text-muted-foreground">{subject}</span></span>
-          
-          <div className="flex gap-2 items-center">
-          <div className="font-medium">Domains: </div>
-          <div className="flex flex-wrap gap-2">
-          {domains.map((domain) => (
-            <span
-              key={domain}
-              className="px-2 py-1 bg-background text-xs rounded-full border border-border text-muted-foreground"
-            >
-              {domain}
-            </span>
-          ))}
-        </div>
-        
+        <div className="text-sm flex items-center gap-3 font-medium">
+          <span className="text-slate-700 dark:text-slate-300">
+            Subject: <span className="text-indigo-500 dark:text-indigo-400">{subject}</span>
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-700 dark:text-slate-300">Domains:</span>
+            <div className="flex flex-wrap gap-1">
+              {domains.map((domain) => (
+                <span
+                  key={domain}
+                  className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-xs rounded-full text-indigo-700 dark:text-indigo-300"
+                >
+                  {domain}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </motion.div>
 
-    
-
-      {/* Filters Section */}
+      {/* Filters */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <Card className="p-4">
-          <div className="flex flex-wrap items-center gap-4">
+        <Card className="p-3 bg-white dark:bg-slate-800 shadow-sm rounded-lg">
+          <div className="flex flex-wrap items-center gap-3">
             {Object.entries(filterOptions).map(([key, options]) => (
               <div key={key} className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground capitalize">{key}:</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 capitalize">
+                  {key}:
+                </span>
                 <div className="flex gap-1">
                   {options.map((option) => (
                     <Button
                       key={option.value}
                       variant={filters[key as keyof typeof filters] === option.value ? "default" : "outline"}
                       size="sm"
-                      onClick={() => {
-                        setFiltering(true);
-                        setFilters((prev) => ({ ...prev, [key]: option.value }));
-                        setTimeout(() => setFiltering(false), 500); // Simulate loading time
-                      }}
+                      onClick={() => setFilters((prev) => ({ ...prev, [key]: option.value }))}
                       className={cn(
-                        "h-6 px-2 text-xs",
-                        filters[key as keyof typeof filters] === option.value && "bg-primary text-primary-foreground"
+                        "h-6 px-2 text-xs rounded-lg",
+                        filters[key as keyof typeof filters] === option.value
+                          ? "bg-indigo-500 text-white dark:bg-indigo-400 dark:text-slate-900"
+                          : "text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-indigo-100 dark:hover:bg-indigo-900"
                       )}
                     >
                       {option.label}
@@ -269,55 +268,59 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
       >
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Question Breakdown</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {Object.entries(domainBreakdown).sort((a, b) => {
-              // Define a static order for domains
-              const order = ["Craft and Structure", "Information and Ideas"];
-              return order.indexOf(a[0]) - order.indexOf(b[0]);
-            }).map(([domainKey, { total, subdomains }]) => {
-              const domain = subjects[subject].find(d => d.primary_class_cd === domainKey); // Find the domain object
+        <div className="space-y-3 mt-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+              Question Breakdown
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSkillCheckboxes((prev) => !prev)}
+              className="text-indigo-500 dark:text-indigo-400 border-indigo-500 dark:border-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg"
+            >
+              {showSkillCheckboxes ? "Hide Skills Filter" : "Show Skills Filter"}
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Object.entries(domainBreakdown).map(([domainKey, domain]) => {
+              const domainInfo = subjects[subject].find((d) => d.primary_class_cd === domainKey);
               return (
-                <Card key={domainKey} className="p-4 flex flex-col relative">
+                <Card
+                  key={domainKey}
+                  className="p-3 flex flex-col relative bg-white dark:bg-slate-800 shadow-md rounded-lg"
+                >
                   <div className="absolute top-2 right-2">
-                    <span className="px-2 py-1 bg-background text-xs rounded-full border border-border text-muted-foreground">
-                      {domain?.primary_class_cd} {/* Show the label */}
+                    <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-xs rounded-full text-indigo-700 dark:text-indigo-300">
+                      {domainInfo?.primary_class_cd}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                      {total}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-full bg-indigo-500 dark:bg-indigo-400 text-white flex items-center justify-center font-bold text-sm">
+                      {domain.total}
                     </div>
-                    <h3 className="text-sm font-semibold">{domain?.label}</h3> {/* Show the primary_class_cd */}
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      {domainInfo?.label}
+                    </h3>
                   </div>
                   <div className="flex-grow">
-                    <div className="space-y-2">
-                      {Object.entries(subdomains).map(([subdomainName, count]) => (
-                        <div key={subdomainName} className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center font-medium text-xs">
-                            {count}
+                    <div className="space-y-1.5">
+                      {Object.entries(domain.skills).map(([skillCd, skill]) => (
+                        <div key={skillCd} className="flex items-center gap-2">
+                          {showSkillCheckboxes && (
+                            <input
+                              type="checkbox"
+                              checked={selectedSkills.includes(skillCd)}
+                              onChange={(e) => handleSkillSelect(skillCd, e.target.checked)}
+                              className="accent-indigo-500 dark:accent-indigo-400 w-4 h-4"
+                            />
+                          )}
+                          <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center font-medium text-xs">
+                            {skill.count}
                           </div>
-                          <span className="text-xs">{subdomainName}</span>
+                          <span className="text-xs text-slate-600 dark:text-slate-300">{skill.name}</span>
                         </div>
                       ))}
-                      {/* Ensure a fixed number of entries */}
-                      {subdomains.length < 3 && (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center font-medium text-xs">
-                              0
-                            </div>
-                            <span className="text-xs">Placeholder</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center font-medium text-xs">
-                              0
-                            </div>
-                            <span className="text-xs">Placeholder</span>
-                          </div>
-                        </>
-                      )}
                     </div>
                   </div>
                 </Card>
@@ -327,24 +330,23 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
         </div>
       </motion.div>
 
-
-      {/* Start Practice Button */}
+      {/* Start Practice */}
       <motion.div
-        className="flex justify-center mt-8"
+        className="flex justify-center mt-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.8 }}
       >
-        <Button 
-          size="lg" 
-          className="w-full max-w-md px-8 py-6 text-lg font-bold" 
-          disabled={questions.length === 0}
+        <Button
+          size="lg"
+          className="w-full max-w-xs px-6 py-4 text-base font-bold bg-indigo-500 dark:bg-indigo-400 text-white dark:text-slate-900 rounded-lg hover:bg-indigo-500 dark:hover:bg-indigo-500 transition-colors"
+          disabled={filteredQuestions.length === 0}
           onClick={handleStartPractice}
         >
           Start Practice
-          <ChevronRight className="w-5 h-5 ml-2" />
+          <ChevronRight className="w-4 h-4 ml-2" />
         </Button>
       </motion.div>
     </motion.div>
-  )
+  );
 }

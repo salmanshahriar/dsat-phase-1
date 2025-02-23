@@ -43,7 +43,7 @@ export function QuizOverviewPage({
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8 h-[calc(100vh-4rem)] overflow-y-auto mb-16 sm:mb-20 lg:mb-0">
       <Button variant="ghost" onClick={handleBackToQuiz} className="mb-8 bg-background">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Quiz
+        <ArrowLeft className="mr-2 h-4 w-4" /> Show Dashboard
       </Button>
       <div className="space-y-8">
         <div className="bg-card border rounded-lg p-6 mb-8">

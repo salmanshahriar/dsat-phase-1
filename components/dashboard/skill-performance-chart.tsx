@@ -2,8 +2,29 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { BarChart } from "@/components/ui/chart"
 
-const SkillPerformanceChart = ({ data }) => {
-  const chartData = data.map((skill) => ({
+// Define the interface for individual skill data from the API
+interface SkillData {
+  skill_desc: string // Description of the skill (e.g., "Algebra", "Programming")
+  total_questions: number
+  solved: number
+  success_rate: number
+}
+
+// Define the interface for the chart data structure
+interface ChartData {
+  skill: string
+  "Total Questions": number
+  "Solved Questions": number
+  "Success Rate": number
+}
+
+// Define props interface for the component
+interface SkillPerformanceChartProps {
+  data: SkillData[]
+}
+
+const SkillPerformanceChart = ({ data }: SkillPerformanceChartProps) => {
+  const chartData: ChartData[] = data.map((skill) => ({
     skill: skill.skill_desc,
     "Total Questions": skill.total_questions,
     "Solved Questions": skill.solved,
@@ -19,7 +40,7 @@ const SkillPerformanceChart = ({ data }) => {
           index="skill"
           categories={["Total Questions", "Solved Questions", "Success Rate"]}
           colors={["#3b82f6", "#10b981", "#f59e0b"]}
-          valueFormatter={(value) => `${value}`}
+          valueFormatter={(value: number) => `${value}`}
           yAxisWidth={48}
           className="h-[400px]"
         />
@@ -29,4 +50,3 @@ const SkillPerformanceChart = ({ data }) => {
 }
 
 export default SkillPerformanceChart
-

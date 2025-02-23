@@ -2,20 +2,45 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { DonutChart, BarChart } from "@/components/ui/chart"
 
-const OverallSummaryChart = ({ data }) => {
-  const donutData = [
+// Define the interface for the input data from the API
+interface OverallSummaryData {
+  solved_questions: number
+  total_questions: number
+  success_rate: number
+  total_attempts: number
+}
+
+// Define the interface for the DonutChart data structure
+interface DonutChartData {
+  name: string
+  value: number
+}
+
+// Define the interface for the BarChart data structure
+interface BarChartData {
+  name: string
+  value: number
+}
+
+// Define props interface for the component
+interface OverallSummaryChartProps {
+  data: OverallSummaryData
+}
+
+const OverallSummaryChart = ({ data }: OverallSummaryChartProps) => {
+  const donutData: DonutChartData[] = [
     { name: "Solved", value: data.solved_questions },
-    { name: "Unsolved", value: data.total_questions - data.solved_questions },
+    { name: "Unsolved", value: Math.max(0, data.total_questions - data.solved_questions) }, // Prevent negative values
   ]
 
-  const barData = [
+  const barData: BarChartData[] = [
     { name: "Success Rate", value: data.success_rate },
     { name: "Total Attempts", value: data.total_attempts },
   ]
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card className="">
+      <Card>
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Questions Solved</h3>
           <DonutChart
@@ -28,7 +53,7 @@ const OverallSummaryChart = ({ data }) => {
           />
         </CardContent>
       </Card>
-      <Card className="">
+      <Card>
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Success Rate & Attempts</h3>
           <BarChart
@@ -47,4 +72,3 @@ const OverallSummaryChart = ({ data }) => {
 }
 
 export default OverallSummaryChart
-

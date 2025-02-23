@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
-import { Sparkles, Atom, Brain, ChevronRight, Book, Calculator } from "lucide-react"
-import { QuizSetup } from "@/components/quiz/QuizSetup"
-import { Domain } from "@/types/quiz"
-import QuizInterface from "@/components/quiz/QuizInterface"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
+import { Sparkles, Atom, Brain, ChevronRight, Book, Calculator } from "lucide-react";
+import { QuizSetup } from "@/components/quiz/QuizSetup";
+import { Domain } from "@/types/quiz";
+import QuizInterface from "@/components/quiz/QuizInterface";
 
 const subjects = {
   English: [
@@ -23,102 +23,106 @@ const subjects = {
     { id: "problem-solving", label: "Problem-Solving and Data Analysis", icon: Sparkles, primary_class_cd: "Q" },
     { id: "geometry-trig", label: "Geometry and Trigonometry", icon: Atom, primary_class_cd: "S" },
   ],
-} as const
+} as const;
 
 const subjectIcons = {
   English: Book,
   Math: Calculator,
-}
+};
 
 export default function PracticePage() {
-  const [selectedSubject, setSelectedSubject] = useState<"English" | "Math" | "">("")
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([])
-  const [showQuizSetup, setShowQuizSetup] = useState(false)
-  const [showQuizInterface, setShowQuizInterface] = useState(false)
+  const [selectedSubject, setSelectedSubject] = useState<"English" | "Math" | "">("");
+  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  const [showQuizSetup, setShowQuizSetup] = useState(false);
+  const [showQuizInterface, setShowQuizInterface] = useState(false);
 
   const handleSubjectChange = (subject: "English" | "Math") => {
-    setSelectedSubject(subject)
-    setSelectedDomains([])
-  }
+    setSelectedSubject(subject);
+    setSelectedDomains([]);
+  };
 
   const handleDomainToggle = (domainId: string) => {
     setSelectedDomains((prev) =>
       prev.includes(domainId) ? prev.filter((id) => id !== domainId) : [...prev, domainId]
-    )
-  }
+    );
+  };
 
   const handleContinue = () => {
     if (selectedSubject && selectedDomains.length > 0) {
-      setShowQuizSetup(true)
+      setShowQuizSetup(true);
     }
-  }
+  };
 
   const handleQuizSetupBack = () => {
-    setShowQuizSetup(false)
-  }
+    setShowQuizSetup(false);
+  };
 
   const handleStartQuiz = () => {
-    setShowQuizSetup(false)
-    setShowQuizInterface(true)
-  }
+    setShowQuizSetup(false);
+    setShowQuizInterface(true);
+  };
 
   if (showQuizInterface) {
-    return <QuizInterface />
+    return <QuizInterface />;
   }
 
   if (showQuizSetup) {
     return (
-      <div className="container mx-auto px-4 py-8 w-full">
+      <div className="container mx-auto px-4 py-6 w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg">
         <QuizSetup
           subject={selectedSubject}
-          domains={selectedDomains.map(domainId =>
-            subjects[selectedSubject as keyof typeof subjects].find(d => d.id === domainId)?.primary_class_cd
-          ).filter(Boolean) as string[]}
+          domains={selectedDomains
+            .map((domainId) =>
+              subjects[selectedSubject as keyof typeof subjects].find((d) => d.id === domainId)?.primary_class_cd
+            )
+            .filter(Boolean) as string[]}
           onBack={handleQuizSetupBack}
           onStart={handleStartQuiz}
         />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-start bg-background text-foreground">
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-foreground">
       <motion.div
-        className="w-full max-w-4xl space-y-8"
+        className="container mx-auto px-4 py-6 w-full max-w-3xl space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         {/* Subject Selection */}
-        <div className="space-y-4">
-          <Label className="text-lg font-semibold block text-center">Select Subject</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-4 bg-white dark:bg-slate-800 shadow-md rounded-lg p-4">
+          <Label className="text-lg font-semibold block text-slate-800 dark:text-slate-200">
+            Select Subject
+          </Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {(Object.keys(subjects) as Array<"English" | "Math">).map((subject) => {
-              const Icon = subjectIcons[subject]
+              const Icon = subjectIcons[subject];
               return (
                 <motion.button
                   key={subject}
                   onClick={() => handleSubjectChange(subject)}
-                  className={`flex items-center space-x-3 p-4 rounded-lg transition-all w-full h-16 ${
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all w-full shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 dark:hover:border-indigo-600 active:bg-indigo-500 active:text-white active:border-indigo-500 ${
                     selectedSubject === subject
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground border border-border"
+                      ? "bg-indigo-500 dark:bg-indigo-600 text-white  dark:border-indigo-600"
+                      : ""
                   }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Icon className="w-6 h-6 flex-shrink-0" />
-                  <span className="font-medium flex-grow text-left text-lg">{subject}</span>
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium flex-grow text-left text-sm">{subject}</span>
                   {selectedSubject === subject && (
                     <motion.div
-                      className="w-2 h-2 rounded-full bg-primary-foreground ml-auto"
+                      className="w-2 h-2 rounded-full bg-white ml-auto"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
                 </motion.button>
-              )
+              );
             })}
           </div>
         </div>
@@ -128,31 +132,33 @@ export default function PracticePage() {
           {selectedSubject && (
             <motion.div
               key="domains"
-              className="space-y-4"
+              className="space-y-4 bg-white dark:bg-slate-800 shadow-md rounded-lg p-4"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Label className="text-lg font-semibold block">Select Knowledge Domains</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Label className="text-lg font-semibold block text-slate-800 dark:text-slate-200">
+                Select Knowledge Domains
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {subjects[selectedSubject].map((domain) => (
                   <motion.button
                     key={domain.id}
                     onClick={() => handleDomainToggle(domain.id)}
-                    className={`flex items-center space-x-3 p-4 rounded-lg transition-all w-full h-16 ${
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-all w-full shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 dark:hover:border-indigo-600 active:bg-indigo-500 active:text-white active:border-indigo-500 ${
                       selectedDomains.includes(domain.id)
-                        ? "bg-secondary text-secondary-foreground border-2 border-primary"
-                        : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground border border-border"
+                        ? "bg-indigo-500 dark:bg-indigo-600 text-white  dark:border-indigo-600"
+                        : ""
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <domain.icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-medium flex-grow text-left">{domain.label}</span>
+                    <span className="font-medium flex-grow text-left text-sm">{domain.label}</span>
                     {selectedDomains.includes(domain.id) && (
                       <motion.div
-                        className="w-2 h-2 rounded-full bg-primary ml-auto"
+                        className="w-2 h-2 rounded-full bg-white ml-auto"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -166,25 +172,30 @@ export default function PracticePage() {
         </AnimatePresence>
 
         {/* Continue Button */}
-        {selectedSubject && (
-          <motion.div
-            className="flex justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Button
-              className="w-full max-w-md px-8 py-6 text-lg font-bold"
-              size="lg"
-              disabled={selectedDomains.length === 0}
-              onClick={handleContinue}
+        <AnimatePresence>
+          {selectedSubject && (
+            <motion.div
+              className="flex justify-center mt-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
             >
-              Continue
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
-          </motion.div>
-        )}
+              <Button
+                className={`w-full max-w-xs px-6 py-4 text-base font-bold bg-border-indigo-200 bg-indigo-500 text-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:bg-indigo-400 dark:hover:bg-indigo-500 active:bg-indigo-400 active:text-white active:border-indigo-400  ${
+                  selectedDomains.length === 0 ? "opacity-50 cursor-not-allowed text-white/80" : ""
+                }`}
+                size="lg"
+                disabled={selectedDomains.length === 0}
+                onClick={handleContinue}
+              >
+                Continue
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
-  )
+  );
 }

@@ -5,23 +5,14 @@ import { useQuiz } from "@/contexts/QuizContext"
 import cn from "classnames"
 import { motion } from "framer-motion"
 
-interface QuestionMapProps {
-  markedQuestions: Set<string>
-  onClose?: () => void
-}
-
-export function QuestionMap({ markedQuestions, onClose }: QuestionMapProps) {
-  const { questions, quizState, setQuestionIndex } = useQuiz()
-
-  const getQuestionStatus = (index: number) => {
-    const question = questions[index]
-    const isAnswered = quizState.answers[question?.externalId]
-    const isMarked = markedQuestions.has(question?.externalId)
-    const isCurrent = quizState.currentQuestionIndex === index
-
-    return { isAnswered, isMarked, isCurrent }
-  }
-
+export function QuestionMap({
+  questionIds,
+  currentIndex,
+  answers,
+  markedQuestions,
+  onSelectQuestion,
+  onClose,
+}: QuestionMapProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -44,8 +35,12 @@ export function QuestionMap({ markedQuestions, onClose }: QuestionMapProps) {
           </Button>
         </div>
         <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 sm:gap-2 mb-4">
-          {questions.map((_, index) => {
-            const { isAnswered, isMarked, isCurrent } = getQuestionStatus(index)
+          {questionIds.map((id, index) => {
+            // Determine question status
+            const isAnswered = !!answers[id];
+            const isMarked = markedQuestions.has(id);
+            const isCurrent = index === currentIndex;
+
             return (
               <Button
                 key={index}
@@ -59,8 +54,8 @@ export function QuestionMap({ markedQuestions, onClose }: QuestionMapProps) {
                   "hover:bg-[#4361ee]/10",
                 )}
                 onClick={() => {
-                  setQuestionIndex(index)
-                  onClose?.()
+                  onSelectQuestion(index);
+                  onClose();
                 }}
               >
                 {index + 1}
@@ -74,7 +69,7 @@ export function QuestionMap({ markedQuestions, onClose }: QuestionMapProps) {
                 )}
                 {isCurrent && <MapPin className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 text-white" />}
               </Button>
-            )
+            );
           })}
         </div>
         <div className="flex flex-col mt-4 space-y-2 text-xs sm:text-sm">
@@ -93,5 +88,5 @@ export function QuestionMap({ markedQuestions, onClose }: QuestionMapProps) {
         </div>
       </motion.div>
     </motion.div>
-  )
+  );
 }

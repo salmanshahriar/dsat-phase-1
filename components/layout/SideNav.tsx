@@ -27,7 +27,7 @@ export function SideNav() {
   return (
     <nav
       className={`hidden lg:flex flex-col h-[calc(100vh-4rem)] bg-background border-r border-border transition-all duration-300 flex-shrink-0 ${
-        isExpanded ? "w-48" : "w-20"
+        isExpanded ? "w-48" : "w-[74px]"
       }`}
     >
       <div className="flex items-center justify-end p-4">
@@ -44,8 +44,8 @@ export function SideNav() {
             <Link href={item.href} passHref>
               <div
                 className={cn(
-                  "flex items-center px-3 py-2 rounded-lg text-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200",
-                  index === activeIndex && "bg-primary text-primary-foreground",
+                  "flex items-center px-3 py-2 rounded-lg text-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200 ",
+                  index === activeIndex && " dark:text-white text-primary-foreground bg-indigo-500",
                 )}
               >
                 <item.icon size={24} className="flex-shrink-0" />
