@@ -32,12 +32,12 @@ export default function ProfileContent({ profileData }: { profileData: ProfileDa
     <div className="min-h-screen p-6 md:p-8 bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto space-y-6 md:space-y-8 w-full md:max-w-none">
         {/* Profile Card */}
+        <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-lg md:text-xl font-medium tracking-tight">
+            Profile
+        </div>
         <Card className="border-0 shadow-sm rounded-lg bg-white dark:bg-slate-800 overflow-hidden">
-          <CardHeader className="p-4 md:p-6 bg-indigo-500/5">
-            <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-medium text-indigo-500 tracking-tight">
-              <User className="h-4 w-4 md:h-5 md:w-5" /> Profile
-            </CardTitle>
-          </CardHeader>
+          
           <CardContent className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-6">
             <ProfileItem icon={<User className="h-4 w-4 md:h-5 md:w-5 text-indigo-500" />} label="Name" value={profileData.full_name} />
             <ProfileItem icon={<Mail className="h-4 w-4 md:h-5 md:w-5 text-indigo-500" />} label="Email" value={profileData.email} />
@@ -49,14 +49,14 @@ export default function ProfileContent({ profileData }: { profileData: ProfileDa
             />
           </CardContent>
         </Card>
+        </div>
 
         {/* Optimized Device Logs */}
+        <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-lg md:text-xl font-medium tracking-tight">
+        Device Logs
+        </div>
         <Card className="border-0 shadow-sm rounded-lg bg-white dark:bg-slate-800 overflow-hidden">
-          <CardHeader className="p-4 md:p-6 bg-indigo-500/5">
-            <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-medium text-indigo-500 tracking-tight">
-              <Fingerprint className="h-4 w-4 md:h-5 md:w-5" /> Device Logs
-            </CardTitle>
-          </CardHeader>
           <CardContent className="p-4 md:p-6">
             <ScrollArea className="max-h-[200px] md:max-h-[400px] w-full rounded-md border border-indigo-500/10">
               <div className="p-3 md:p-4 space-y-3 md:space-y-4">
@@ -105,6 +105,7 @@ export default function ProfileContent({ profileData }: { profileData: ProfileDa
             </ScrollArea>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

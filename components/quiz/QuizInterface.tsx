@@ -48,13 +48,14 @@ const generateExamId = () => {
 export default function QuizInterface() {
   const [externalIds, setExternalIds] = useState(() => {
     const storedIds = localStorage.getItem("questions_externalId_array")
+    console.log("Initial externalIds from localStorage:", storedIds)
     return storedIds ? JSON.parse(storedIds) : []
   })
 
   const [examId, setExamId] = useState<number>(generateExamId())
-  const [answers, setAnswers] = useState<Record<string, string>>({}) // Selected answers per question
-  const [attempts, setAttempts] = useState<Record<string, string[]>>({}) // Attempts per question
-  const [sprInputs, setSprInputs] = useState<Record<string, string>>({}) // Current input for SPR
+  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [attempts, setAttempts] = useState<Record<string, string[]>>({})
+  const [sprInputs, setSprInputs] = useState<Record<string, string>>({})
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now())
   const [isNavigating, setIsNavigating] = useState(false)
   const [questionHistory, setQuestionHistory] = useState<Record<string, any>>({})
@@ -78,7 +79,6 @@ export default function QuizInterface() {
   const [isQuizComplete, setIsQuizComplete] = useState(false)
   const [completionCount, setCompletionCount] = useLocalStorage("quizCompletionCount", 0)
   const [completedTime, setCompletedTime] = useState("")
-  const [showQuestionMap, setShowQuestionMap] = useState(false)
   const [isQuestionMapOpen, setIsQuestionMapOpen] = useState(false)
   const [isStopConfirmationOpen, setIsStopConfirmationOpen] = useState(false)
   const sessionData = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : ""
@@ -107,12 +107,21 @@ export default function QuizInterface() {
   }, [sessionData])
 
   useEffect(() => {
-    fetchQuestion(externalIds[currentQuestionIndex])
+    if (externalIds.length > 0 && externalIds[currentQuestionIndex]) {
+      fetchQuestion(externalIds[currentQuestionIndex])
+    }
   }, [currentQuestionIndex, externalIds, fetchQuestion])
 
   useEffect(() => {
-    setProgress(((currentQuestionIndex + 1) / externalIds.length) * 100)
+    setProgress(externalIds.length > 0 ? ((currentQuestionIndex + 1) / externalIds.length) * 100 : 0)
   }, [currentQuestionIndex, externalIds.length])
+
+  // Synchronize isMarkedForReview with current question
+  useEffect(() => {
+    if (currentQuestion) {
+      setIsMarkedForReview(markedQuestions.has(currentQuestion.externalId))
+    }
+  }, [currentQuestion, markedQuestions])
 
   const sendQuestionData = useCallback(async (question: any) => {
     const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000)
@@ -210,15 +219,44 @@ export default function QuizInterface() {
     setTimeout(() => setIsNavigating(false), 500)
   }, [currentQuestionIndex, isNavigating])
 
-  const toggleMarkForReview = useCallback(() => {
-    setIsMarkedForReview((prev) => !prev)
-    setMarkedQuestions((prev) => {
-      const newSet = new Set(prev)
-      if (!isMarkedForReview) newSet.add(currentQuestion.externalId)
-      else newSet.delete(currentQuestion.externalId)
-      return newSet
-    })
-  }, [currentQuestion?.externalId, isMarkedForReview])
+  const toggleMarkForReview = useCallback(async () => {
+    const id = currentQuestion?.externalId
+    if (!id) return // Ensure externalId exists
+
+    const isCurrentlyMarked = markedQuestions.has(id)
+    const operation = isCurrentlyMarked ? "remove" : "add"
+
+    try {
+      const response = await fetch("https://zoogle.projectdaffodil.xyz/api/v1/markAsReview", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData}`,
+        },
+        body: JSON.stringify({
+          externalId: id,
+          operation: operation,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to mark for review")
+      const data = await response.json()
+
+      if (data.success) {
+        setMarkedQuestions((prev) => {
+          const newSet = new Set(prev)
+          if (operation === "add") newSet.add(id)
+          else newSet.delete(id)
+          return newSet
+        })
+      } else {
+        console.error("Failed to mark for review:", data.message)
+      }
+    } catch (error) {
+      console.error("Error marking for review:", error)
+    }
+  }, [currentQuestion?.externalId, markedQuestions, sessionData])
 
   const toggleStrikeoutMode = useCallback(() => {
     setStrikeoutMode((prev) => !prev)
@@ -380,8 +418,6 @@ export default function QuizInterface() {
         )}
       </AnimatePresence>
 
-
-        {/* quiz card container */}
       <div className="flex-grow overflow-hidden container max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col lg:flex-row gap-2 sm:gap-4 mb-3 lg:mb-0">
         <MotionCard
           className="flex-1 p-2 sm:p-4 overflow-auto lg:max-h-[calc(100vh-14rem)] max-h-screen mb-2 lg:mb-0 border-0 lg:border sm:shadow-none lg:shadow-md"
@@ -393,12 +429,6 @@ export default function QuizInterface() {
             <div dangerouslySetInnerHTML={{ __html: currentQuestion?.questionInfo.stimulus }} />
           </div>
         </MotionCard>
-
-        {showQuestionMap && (
-          <div className="hidden lg:block w-64 flex-shrink-0">
-            <QuestionMap markedQuestions={markedQuestions} onClose={() => setShowQuestionMap(false)} />
-          </div>
-        )}
 
         <MotionCard
           className="flex-1 p-2 sm:p-4 md:overflow-auto lg:max-h-[calc(100vh-14rem)] max-h-screen"
@@ -490,8 +520,8 @@ export default function QuizInterface() {
                             "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/50"
                           )}
                         >
-                          <div className="mr-2 sm:mr-3 w-10 h-10 sm:w-6 sm:h-6 rounded-full border border-primary/70 flex items-center justify-center text-primary font-semibold text-xs">
-                            {getOptionLetter(index)}
+                          <div className="flex mr-3 rounded-full border border-primary/70 items-center justify-center text-primary font-semibold text-xs">
+                            <div className="w-6 h-6 md:w-8 md:h-8 flex justify-center items-center md:text-lg">{getOptionLetter(index)}</div>
                           </div>
                           <div
                             className={cn(
@@ -587,19 +617,20 @@ export default function QuizInterface() {
       <motion.div className="border-t border-border bg-card" variants={fadeIn} initial="initial" animate="animate">
         <div className="container max-w-7xl mx-auto px-2 sm:px-4 mb-16 lg:mb-0">
           <div className="flex items-center justify-between py-2 sm:py-3">
-            <div className="relative flex gap-3">
+            <div className="relative flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsQuestionMapOpen(true)}
-                className="gap-1 min-w-[140px] font-medium"
+                className="gap-1 md:min-w-[140px] w-24 font-medium"
+                disabled={externalIds.length === 0}
               >
-                <span className="hidden md:block">Question</span> {currentQuestionIndex + 1} of {externalIds.length}
-                <ChevronUp className="h-4 w-4 opacity-50" />
+                <span className="hidden md:block">Question </span>{currentQuestionIndex + 1} of {externalIds.length}
+                <ChevronUp className="h-3 w-4 opacity-50" />
               </Button>
               <div className="flex justify-end">
                 <Button variant="outline" size="sm" onClick={handleStopQuiz} className="flex items-center">
-                  <StopCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <StopCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 hidden md:block" />
                   Stop <span className="hidden md:">Practice</span>
                 </Button>
               </div>
@@ -612,7 +643,7 @@ export default function QuizInterface() {
                 onClick={previousQuestion}
                 disabled={currentQuestionIndex === 0 || isNavigating}
               >
-                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Back
+                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 hidden md:block" /> Back
               </Button>
               <Button
                 size="sm"
@@ -620,7 +651,7 @@ export default function QuizInterface() {
                 disabled={!answers[currentQuestion?.externalId] || isNavigating}
               >
                 {currentQuestionIndex === externalIds.length - 1 ? "Finish" : "Next"}{" "}
-                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 hidden md:block" />
               </Button>
             </div>
           </div>
@@ -638,10 +669,19 @@ export default function QuizInterface() {
         {showGraphingCalculator && (
           <FloatingCalculator key="graphing" onClose={() => setShowGraphingCalculator(false)} />
         )}
-        {isQuestionMapOpen && (
-          <QuestionMap markedQuestions={markedQuestions} onClose={() => setIsQuestionMapOpen(false)} />
+        {isQuestionMapOpen && externalIds.length > 0 && (
+          <QuestionMap
+            externalIds={externalIds}
+            answers={answers}
+            currentQuestionIndex={currentQuestionIndex}
+            setCurrentQuestionIndex={setCurrentQuestionIndex}
+            markedQuestions={markedQuestions}
+            onClose={() => setIsQuestionMapOpen(false)}
+          />
         )}
       </AnimatePresence>
     </motion.div>
   )
 }
+                          
+                          

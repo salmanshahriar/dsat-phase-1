@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
-import useSWR, { mutate } from 'swr';
 
 // Types
 interface LoginResponse {
@@ -24,9 +23,16 @@ interface LoginFormData {
   password: string;
 }
 
-// SWR fetcher functions
+// Utility function to get cookie by name
+function getCookie(name: string): string | undefined {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+}
+
+// Fixed SWR fetcher function
 const fetcher = async (url: string) => {
-  const token = localStorage.getItem('session_token');
+  const token = getCookie('accessToken');
   const headers: HeadersInit = {
     'Accept': 'application/json',
   };
@@ -49,6 +55,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  // Redirect if already logged in (based on cookie)
+  useEffect(() => {
+    const token = getCookie('accessToken');
+    if (token) {
+      router.push('/dashboard');
+    }
+  }, [router]);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
@@ -69,15 +83,24 @@ export default function LoginPage() {
       const result: LoginResponse = await response.json();
 
       if (result.auth) {
-        document.cookie = `session_data=${result.session_data}; path=/; max-age=3600; SameSite=Strict; Secure`;
-        document.cookie = `accessToken=${result.accessToken}; path=/; max-age=3600; SameSite=Strict; Secure`;
+        // Conditional Secure flag for development vs production
+        const isSecure = process.env.NODE_ENV === 'production';
+        const secureFlag = isSecure ? '; Secure' : '';
+        
+        // Set cookies
+        document.cookie = `session_data=${result.session_data}; path=/; max-age=3600; SameSite=Strict${secureFlag}`;
+        document.cookie = `accessToken=${result.accessToken}; path=/; max-age=3600; SameSite=Strict${secureFlag}`;
+        
+        // Determine redirect destination
         const redirectTo = new URLSearchParams(window.location.search).get('redirectTo') || '/dashboard';
+        
+        // Perform redirect
         router.push(redirectTo);
       } else {
         setError(result.error || "Login failed");
       }
     } catch (err) {
-      setError("An error occurred. Please try again.")
+      setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false)
     }
@@ -139,4 +162,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
