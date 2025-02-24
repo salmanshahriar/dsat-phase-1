@@ -90,7 +90,7 @@ export function TopNav() {
     <nav className="relative z-50 h-16 bg-background border-b border-border px-4 lg:px-6 flex items-center justify-between">
       <div className="flex items-center">
         <Link href="/" className="text-xl font-bold text-primary">
-          DSAT SCHOOL (ADMIN)
+          DSAT SCHOOL
         </Link>
       </div>
       <div className="flex items-center space-x-4">
