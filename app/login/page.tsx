@@ -10,7 +10,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
 
-// Types
 interface LoginResponse {
   auth: boolean;
   session_data?: string;
@@ -23,14 +22,22 @@ interface LoginFormData {
   password: string;
 }
 
-// Utility function to get cookie by name
 function getCookie(name: string): string | undefined {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop()?.split(';').shift();
 }
 
-// Fixed SWR fetcher function
+function deleteAllCookies() {
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+    document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  }
+}
+
 const fetcher = async (url: string) => {
   const token = getCookie('accessToken');
   const headers: HeadersInit = {
@@ -40,7 +47,6 @@ const fetcher = async (url: string) => {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-
   const response = await fetch(url, { headers });
   if (!response.ok) {
     throw new Error('An error occurred while fetching the data.');
@@ -55,8 +61,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  // Redirect if already logged in (based on cookie)
   useEffect(() => {
+    deleteAllCookies();
+    
     const token = getCookie('accessToken');
     if (token) {
       router.push('/dashboard');
@@ -83,7 +90,6 @@ export default function LoginPage() {
       const result: LoginResponse = await response.json();
 
       if (result.auth) {
-        // Conditional Secure flag for development vs production
         const isSecure = process.env.NODE_ENV === 'production';
         const secureFlag = isSecure ? '; Secure' : '';
         

@@ -8,12 +8,11 @@ export function ThemeToggle() {
   const { setTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // This effect will run only on the client
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) return null // Prevents hydration mismatch
+  if (!mounted) return null 
 
   return (
     <button

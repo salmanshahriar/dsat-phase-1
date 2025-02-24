@@ -26,7 +26,6 @@ export function TopNav() {
 
   const router = useRouter();
 
-  // Fetch user data (name and email) when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       async function fetchUserData() {
@@ -40,6 +39,15 @@ export function TopNav() {
               Authorization: `Bearer ${sessionData}`,
             },
           });
+          if (res.status === 401) {
+            document.cookie.split(";").forEach((cookie) => {
+              const [name] = cookie.split("=");
+              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            });
+            
+            router.push("/login");
+            return;
+          }
 
           if (!res.ok) {
             throw new Error("Failed to fetch user data");
@@ -49,7 +57,7 @@ export function TopNav() {
           setUser({
             name: data.full_name || "Unknown User",
             email: data.email || "No email",
-            avatar: data.avatar || "/placeholder.svg?height=32&width=32", // Adjust if API provides avatar
+            avatar: data.avatar || "/placeholder.svg?height=32&width=32", 
           });
         } catch (error) {
           console.error(error);

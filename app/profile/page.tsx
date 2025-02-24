@@ -1,11 +1,13 @@
-"use client"; // Add this to make it a Client Component
+"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import ProfileContent from "@/components/profile/profile-content";
+import { useRouter } from 'next/navigation';
 
-async function getProfileData() {
-  const sessionData = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : "";
-  console.log("Session Data:", sessionData);
+// Move getProfileData to accept router as a parameter
+async function getProfileData(router) {
+  const sessionData = typeof window !== "undefined" ? 
+    document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : "";
 
   const res = await fetch("https://zoogle.projectdaffodil.xyz/api/v1/getProfile", {
     method: "POST",
@@ -15,6 +17,16 @@ async function getProfileData() {
       Authorization: `Bearer ${sessionData}`,
     },
   });
+
+  if (res.status === 401) {
+    document.cookie.split(";").forEach((cookie) => {
+      const [name] = cookie.split("=");
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    });
+    
+    router.push("/login");
+    return null; // Return null for unauthorized case
+  }
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -28,12 +40,15 @@ async function getProfileData() {
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState(null);
   const [error, setError] = useState(null);
+  const router = useRouter(); // Move useRouter inside the component
 
   useEffect(() => {
-    getProfileData()
-      .then(data => setProfileData(data))
+    getProfileData(router)
+      .then(data => {
+        if (data) setProfileData(data); // Only set data if not null
+      })
       .catch(err => setError(err.message));
-  }, []);
+  }, [router]); // Add router to dependency array
 
   if (error) {
     return <div>Error loading profile: {error}</div>;
@@ -48,7 +63,7 @@ export default function ProfilePage() {
 
 function ProfileSkeleton() {
   return (
-    <div className="h-[calc(100vh-64px)] overflow-auto  mx-auto p-4 space-y-4 animate-pulse ">
+    <div className="h-[calc(100vh-64px)] overflow-auto mx-auto p-4 space-y-4 animate-pulse">
       <div className="h-8 bg-gray-200 rounded w-1/4"></div>
       <div className="space-y-2">
         {[...Array(4)].map((_, i) => (

@@ -18,9 +18,9 @@ interface QuizContextType {
 
 interface QuizState {
   currentQuestionIndex: number;
-  answers: Record<string, string>; // questionId -> answerId
-  attempts: Record<string, number>; // questionId -> number of attempts
-  extraAttempts: Record<string, number>; // questionId -> number of extra attempts
+  answers: Record<string, string>; 
+  attempts: Record<string, number>; 
+  extraAttempts: Record<string, number>;
   isComplete: boolean;
 }
 

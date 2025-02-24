@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, ChevronRight, Brain, Sparkles, Atom } from "lucide-react";
+import { useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 
 // Define Question interface
@@ -91,6 +92,7 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
           ?.split("=")[1] || ""
       : "";
 
+      const router = useRouter();
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -107,6 +109,17 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
             primary_class_cd: domains,
           }),
         });
+
+
+        if (response.status === 401) {
+          document.cookie.split(";").forEach((cookie) => {
+            const [name] = cookie.split("=");
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          });
+          
+          router.push("/login");
+          return;
+        }
 
         if (!response.ok) throw new Error("Failed to fetch questions");
 

@@ -33,6 +33,7 @@ import { ReferenceModal } from "./ReferenceModal"
 import { QuizOverviewPage } from "./QuizOverviewPage"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { ConfirmationModal } from "./ConfirmationModal"
+import { useRouter } from 'next/navigation';
 
 const MotionCard = motion(Card)
 
@@ -83,7 +84,9 @@ export default function QuizInterface() {
   const [isStopConfirmationOpen, setIsStopConfirmationOpen] = useState(false)
   const sessionData = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : ""
 
+  const router = useRouter();
   const fetchQuestion = useCallback(async (externalId: string) => {
+
     setIsLoading(true)
     try {
       const response = await fetch("https://zoogle.projectdaffodil.xyz/api/v1/question/", {
@@ -94,7 +97,17 @@ export default function QuizInterface() {
           Authorization: `Bearer ${sessionData}`,
         },
         body: JSON.stringify({ externalId }),
-      })
+      });
+  
+      if (response.status === 401) {
+        document.cookie.split(";").forEach((cookie) => {
+          const [name] = cookie.split("=");
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        });
+        
+        router.push("/login");
+        return;
+      }
       if (!response.ok) throw new Error("Failed to fetch question")
       const data = await response.json()
       setCurrentQuestion(data[0])

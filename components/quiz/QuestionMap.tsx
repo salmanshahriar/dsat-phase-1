@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button"
 import cn from "classnames"
 import { motion } from "framer-motion"
 
-// Define the props interface
 interface QuestionMapProps {
-  externalIds: string[] // Array of question IDs
-  answers: Record<string, string> // Answers keyed by question ID
-  currentQuestionIndex: number // Index of the current question
-  setCurrentQuestionIndex: (index: number) => void // Function to set the current question index
-  markedQuestions: Set<string> // Set of marked question IDs
-  onClose?: () => void // Function to close the map
+  externalIds: string[]
+  answers: Record<string, string>
+  currentQuestionIndex: number
+  setCurrentQuestionIndex: (index: number) => void
+  markedQuestions: Set<string>
+  onClose?: () => void
 }
 
 export function QuestionMap({
@@ -22,12 +21,11 @@ export function QuestionMap({
   markedQuestions,
   onClose,
 }: QuestionMapProps) {
-  // Determine the status of each question
   const getQuestionStatus = (index: number) => {
-    const id = externalIds[index] // Get the question ID
-    const isAnswered = !!answers[id] // Check if answered
-    const isMarked = markedQuestions.has(id) // Check if marked
-    const isCurrent = currentQuestionIndex === index // Check if current
+    const id = externalIds[index] 
+    const isAnswered = !!answers[id]
+    const isMarked = markedQuestions.has(id)
+    const isCurrent = currentQuestionIndex === index
     return { isAnswered, isMarked, isCurrent }
   }
 
@@ -60,7 +58,7 @@ export function QuestionMap({
               const { isAnswered, isMarked, isCurrent } = getQuestionStatus(index)
               return (
                 <Button
-                  key={id} // Use the question ID as the key
+                  key={id}
                   variant="outline"
                   className={cn(
                     "relative h-8 sm:h-10 text-xs sm:text-sm font-medium transition-all duration-200",
@@ -71,8 +69,8 @@ export function QuestionMap({
                     "hover:bg-[#4361ee]/10"
                   )}
                   onClick={() => {
-                    setCurrentQuestionIndex(index) // Navigate to the selected question
-                    onClose?.() // Close the map
+                    setCurrentQuestionIndex(index)
+                    onClose?.() 
                   }}
                 >
                   {index + 1} {/* Display question number */}

@@ -12,6 +12,7 @@ import CategoryPerformanceChart from "@/components/dashboard/category-performanc
 import ScoreBandPerformanceChart from "@/components/dashboard/score-band-performance-chart"
 import ProgressChart from "@/components/dashboard/progress-chart"
 import { BookOpen, Brain, Clock, Target } from "lucide-react"
+import { useRouter } from 'next/navigation';
 
 interface OverallSummary {
   solved_questions: number
@@ -53,6 +54,7 @@ export default function Dashboard() {
   const [performanceData, setPerformanceData] = useState<PerformanceData | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +66,17 @@ export default function Dashboard() {
             Authorization: `Bearer ${sessionData}`,
           },
         })
+
+        if (response.status === 401) {
+          document.cookie.split(";").forEach((cookie) => {
+            const [name] = cookie.split("=");
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          });
+          
+          router.push("/login");
+          return;
+        }
+
         if (!response.ok) throw new Error("Network response was not ok")
         const data: PerformanceData = await response.json()
         setPerformanceData(data)
