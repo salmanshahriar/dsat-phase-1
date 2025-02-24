@@ -4,8 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import ProfileContent from "@/components/profile/profile-content";
 import { useRouter } from 'next/navigation';
 
-// Move getProfileData to accept router as a parameter
-async function getProfileData(router) {
+const router = useRouter();
+async function getProfileData {
   const sessionData = typeof window !== "undefined" ? 
     document.cookie.split('; ').find(row => row.startsWith('session_data='))?.split('=')[1] || "" : "";
 
@@ -25,6 +25,7 @@ async function getProfileData(router) {
     });
     
     router.push("/login");
+    router.refresh();
     return null; // Return null for unauthorized case
   }
 

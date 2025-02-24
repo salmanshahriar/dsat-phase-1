@@ -102,6 +102,7 @@ export default function LoginPage() {
         
         // Perform redirect
         router.push(redirectTo);
+        router.refresh();
       } else {
         setError(result.error || "Login failed");
       }

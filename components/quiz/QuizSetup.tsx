@@ -118,6 +118,7 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
           });
           
           router.push("/login");
+          router.refresh();
           return;
         }
 

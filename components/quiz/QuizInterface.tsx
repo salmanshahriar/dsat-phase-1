@@ -106,6 +106,7 @@ export default function QuizInterface() {
         });
         
         router.push("/login");
+        router.refresh();
         return;
       }
       if (!response.ok) throw new Error("Failed to fetch question")
