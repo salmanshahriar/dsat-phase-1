@@ -4,10 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
 import { Sparkles, Atom, Brain, ChevronRight, Book, Calculator } from "lucide-react";
 import { QuizSetup } from "@/components/quiz/QuizSetup";
-import { Domain } from "@/types/quiz";
 import QuizInterface from "@/components/quiz/QuizInterface";
 
 const subjects = {
@@ -84,7 +82,7 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-foreground">
+    <div className="h-[calc(100vh-64px)] overflow-auto flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-foreground">
       <motion.div
         className="container mx-auto px-4 py-6 w-full max-w-3xl space-y-6"
         initial={{ opacity: 0, y: 20 }}

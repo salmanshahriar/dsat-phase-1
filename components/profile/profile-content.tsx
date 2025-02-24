@@ -29,7 +29,7 @@ interface ProfileData {
 
 export default function ProfileContent({ profileData }: { profileData: ProfileData }) {
   return (
-    <div className="min-h-screen p-6 md:p-8 bg-gray-50 dark:bg-slate-900">
+    <div className="h-[calc(100vh-64px)] overflow-auto  p-6 md:p-8 bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto space-y-6 md:space-y-8 w-full md:max-w-none">
         {/* Profile Card */}
         <div className="flex flex-col gap-3">
@@ -51,7 +51,7 @@ export default function ProfileContent({ profileData }: { profileData: ProfileDa
         </Card>
         </div>
 
-        {/* Optimized Device Logs */}
+        {/* Device Logs */}
         <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-lg md:text-xl font-medium tracking-tight">
         Device Logs

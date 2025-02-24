@@ -9,22 +9,18 @@ export function middleware(request: NextRequest) {
   console.log("Path:", path);
   console.log("Session Data:", sessionData);
 
-  // Public paths that don't require authentication
   const isPublicPath = path === "/" || path === "/login";
 
-  // If user is on a public path and has session data, allow access
   if (isPublicPath && sessionData) {
     return NextResponse.next();
   }
 
-  // If user is on a protected path and has no session data, redirect to login
   if (!isPublicPath && !sessionData) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirectTo", path);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Allow the request to continue otherwise
   return NextResponse.next();
 }
 

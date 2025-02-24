@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
-import type { QuizQuestion, QuizState } from "../types/quiz"
+import type { QuizQuestion } from "../types/quiz"
 import { fetchQuizQuestions } from "../lib/api"
 
 interface QuizContextType {
@@ -14,6 +14,14 @@ interface QuizContextType {
   setQuestionIndex: (index: number) => void
   isLoading: boolean
   incrementAttempts: (questionId: string) => void
+}
+
+interface QuizState {
+  currentQuestionIndex: number;
+  answers: Record<string, string>; // questionId -> answerId
+  attempts: Record<string, number>; // questionId -> number of attempts
+  extraAttempts: Record<string, number>; // questionId -> number of extra attempts
+  isComplete: boolean;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined)
@@ -82,17 +90,17 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const incrementAttempts = (questionId: string) => {
     setQuizState((prev) => {
-      const currentAttempts = prev.attempts[questionId] || 0
-      const newAttempts = currentAttempts + 1
-      const extraAttempts = newAttempts > 1 ? newAttempts - 1 : 0
-
+      const currentAttempts = prev.attempts[questionId] || 0;
+      const newAttempts = currentAttempts + 1;
+      const extraAttempts = newAttempts > 1 ? newAttempts - 1 : 0;
+  
       return {
         ...prev,
         attempts: { ...prev.attempts, [questionId]: newAttempts },
         extraAttempts: { ...prev.extraAttempts, [questionId]: extraAttempts },
-      }
-    })
-  }
+      };
+    });
+  };
 
   return (
     <QuizContext.Provider

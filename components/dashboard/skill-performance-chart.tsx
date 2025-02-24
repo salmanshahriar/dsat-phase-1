@@ -32,7 +32,7 @@ const SkillPerformanceChart = ({ data }: SkillPerformanceChartProps) => {
   }))
 
   return (
-    <Card>
+    <Card className="bg-white/70 dark:bg-slate-800/70">
       <CardContent className="p-4">
         <h3 className="text-lg font-semibold mb-4">Skill Performance</h3>
         <BarChart

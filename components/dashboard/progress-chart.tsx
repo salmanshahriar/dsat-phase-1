@@ -54,7 +54,7 @@ const ProgressChart = ({ daily, weekly, monthly }: ProgressChartProps) => {
   }))
 
   return (
-    <Card className="">
+    <Card className="bg-white/70 dark:bg-slate-800/70">
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Progress Over Time</h3>

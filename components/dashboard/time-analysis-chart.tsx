@@ -10,7 +10,7 @@ const TimeAnalysisChart = ({ data }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card>
+      <Card className="bg-white/70 dark:bg-slate-800/70">
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Average Time: Solved vs Unsolved</h3>
           <BarChart
@@ -24,7 +24,7 @@ const TimeAnalysisChart = ({ data }) => {
           />
         </CardContent>
       </Card>
-      <Card>
+      <Card className="bg-white/70 dark:bg-slate-800/70">
         <CardContent className="p-4 flex flex-col justify-center items-center h-full">
           <h3 className="text-lg font-semibold mb-4">Efficiency Ratio</h3>
           <div className="text-4xl font-bold">{Number.parseFloat(data.efficiency_ratio).toFixed(4)}</div>

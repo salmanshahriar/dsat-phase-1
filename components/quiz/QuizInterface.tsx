@@ -347,7 +347,7 @@ export default function QuizInterface() {
 
   return (
     <motion.div
-      className="h-full flex flex-col bg-background"
+      className="h-full flex flex-col bg-background bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800"
       initial="initial"
       animate="in"
       exit="out"
@@ -431,7 +431,7 @@ export default function QuizInterface() {
         </MotionCard>
 
         <MotionCard
-          className="flex-1 p-2 sm:p-4 md:overflow-auto lg:max-h-[calc(100vh-14rem)] max-h-screen"
+          className="flex-1 p-2 sm:p-4 md:overflow-auto lg:max-h-[calc(100vh-14rem)] max-h-screen "
           variants={fadeIn}
           initial="initial"
           animate="animate"
@@ -622,7 +622,7 @@ export default function QuizInterface() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsQuestionMapOpen(true)}
-                className="gap-1 md:min-w-[140px] w-24 font-medium"
+                className="gap-1 md:min-w-[190px] w-24 font-medium"
                 disabled={externalIds.length === 0}
               >
                 <span className="hidden md:block">Question </span>{currentQuestionIndex + 1} of {externalIds.length}

@@ -77,19 +77,19 @@ export default function Dashboard() {
   }, [])
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
+    <div className="h-[calc(100vh-64px)] overflow-auto flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
       <div className="text-lg font-medium text-slate-600 dark:text-slate-300 animate-pulse">Loading...</div>
     </div>
   )
   
   if (error) return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
+    <div className="h-[calc(100vh-64px)] overflow-auto flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
       <div className="text-lg font-medium text-red-500 dark:text-red-400 text-center">{error}</div>
     </div>
   )
   
   if (!performanceData) return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
+    <div className="h-[calc(100vh-64px)] overflow-auto flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
       <div className="text-lg font-medium text-slate-600 dark:text-slate-300">No data available</div>
     </div>
   )
@@ -97,7 +97,7 @@ export default function Dashboard() {
   const { overall_summary } = performanceData
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 mb-16 md:mb-0">
+    <div className="h-[calc(100vh-64px)] overflow-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 mb-16 md:mb-0">
       <div className="container mx-auto px-4 py-4">
         <h1 className="text-2xl font-semibold mb-4 text-slate-800 dark:text-slate-100">
           Performance Dashboard
@@ -131,11 +131,11 @@ export default function Dashboard() {
         </div>
 
         <Card className="overflow-hidden border-0 ">
-        <Tabs defaultValue="overall" className="w-full">
-            <div className="border-b shadow-sm border-slate-200 dark:border-slate-700 bg-/50 dark:bg-slate-800/50 backdrop-blur-sm sticky top-0 z-10">
+        <Tabs defaultValue="overall" className="w-full bg-white/70 dark:bg-slate-800/70">
+            <div className="border-b shadow-sm border-slate-200 dark:border-slate-700 backdrop-blur-sm sticky top-0 z-10">
               <div className="relative">
                 <div className="overflow-x-auto scrollbar-none">
-                  <TabsList className="flex h-12 items-center gap-2 px-4 w-max min-w-full bg-transparent">
+                  <TabsList className="flex h-12 items-center gap-2 px-4 w-max min-w-full  bg-white/70 dark:bg-slate-800/70">
                     {[
                       { value: "overall", label: "Overall" },
                       { value: "skills", label: "Skills" },
@@ -161,7 +161,7 @@ export default function Dashboard() {
             </div>
 
             <div className="pt-3 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-              <TabsContent value="overall" className="mt-0 focus-visible:outline-none">
+              <TabsContent value="overall" className="mt-0 focus-visible:outline-none ">
                 <OverallSummaryChart data={performanceData.overall_summary} />
               </TabsContent>
               <TabsContent value="skills" className="mt-0 focus-visible:outline-none">

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, ChevronRight, Brain, Sparkles, Atom } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Define Question interface
 interface Question {
   id: number;
   status: string;
@@ -31,6 +32,7 @@ interface Question {
   };
 }
 
+// Define filter options
 const filterOptions = {
   difficulty: [
     { label: "All", value: "all" },
@@ -40,12 +42,15 @@ const filterOptions = {
   ],
 } as const;
 
-interface QuizSetupProps {
-  subject: string;
-  domains: string[];
-  onBack: () => void;
-  onStart: () => void;
-}
+// Define type for subjects[subject]
+type SubjectDomain = {
+  id: string;
+  label: string;
+  icon: typeof Brain | typeof Sparkles | typeof Atom;
+  primary_class_cd: string;
+};
+
+type SubjectDomains = SubjectDomain[];
 
 const subjects = {
   English: [
@@ -62,12 +67,20 @@ const subjects = {
   ],
 } as const;
 
+// Define props interface with stricter subject type
+interface QuizSetupProps {
+  subject: "English" | "Math";
+  domains: string[];
+  onBack: () => void;
+  onStart: () => void;
+}
+
 export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionsCount, setQuestionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState({ difficulty: "all" });
+  const [filters, setFilters] = useState<{ difficulty: "all" | "E" | "M" | "H" }>({ difficulty: "all" });
   const [showSkillCheckboxes, setShowSkillCheckboxes] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const sessionData =
@@ -109,25 +122,28 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
     };
 
     if (subject && domains.length > 0) fetchQuestions();
-  }, [subject, domains]);
+  }, [subject, domains, sessionData]);
 
-  const filteredQuestions = questions.filter((question) =>
-    filters.difficulty === "all" || question.questionInfo.difficulty === filters.difficulty
+  const filteredQuestions = questions.filter(
+    (question) => filters.difficulty === "all" || question.questionInfo.difficulty === filters.difficulty
   );
 
-  const domainBreakdown = filteredQuestions.reduce((acc, question) => {
-    const domain = question.questionInfo.primary_class_cd;
-    const skillCd = question.questionInfo.skill_cd;
-    const skillDesc = question.questionInfo.skill_desc;
+  const domainBreakdown = filteredQuestions.reduce(
+    (acc, question) => {
+      const domain = question.questionInfo.primary_class_cd;
+      const skillCd = question.questionInfo.skill_cd;
+      const skillDesc = question.questionInfo.skill_desc;
 
-    if (!acc[domain]) acc[domain] = { total: 0, skills: {} };
-    acc[domain].total += 1;
+      if (!acc[domain]) acc[domain] = { total: 0, skills: {} };
+      acc[domain].total += 1;
 
-    if (!acc[domain].skills[skillCd]) acc[domain].skills[skillCd] = { name: skillDesc, count: 0 };
-    acc[domain].skills[skillCd].count += 1;
+      if (!acc[domain].skills[skillCd]) acc[domain].skills[skillCd] = { name: skillDesc, count: 0 };
+      acc[domain].skills[skillCd].count += 1;
 
-    return acc;
-  }, {} as Record<string, { total: number; skills: Record<string, { name: string; count: number }> }>);
+      return acc;
+    },
+    {} as Record<string, { total: number; skills: Record<string, { name: string; count: number }> }>
+  );
 
   const handleSkillSelect = (skillCd: string, checked: boolean) => {
     setSelectedSkills((prev) => (checked ? [...prev, skillCd] : prev.filter((cd) => cd !== skillCd)));
@@ -149,7 +165,7 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="h-[calc(100vh-64px)] overflow-auto flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-500 dark:border-indigo-400"></div>
       </div>
     );
@@ -157,7 +173,7 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-red-500 p-4">
+      <div className="h-[calc(100vh-64px)] overflow-auto flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-red-500 p-4">
         <p className="text-sm font-medium">{error}</p>
         <Button
           onClick={onBack}
@@ -171,7 +187,7 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
 
   return (
     <motion.div
-      className="min-h-screen space-y-3 w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4 rounded-lg md:px-6 mb-20 md:mb-0 "
+      className="h-[calc(100vh-64px)] overflow-auto space-y-3 w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4 rounded-lg md:px-6 mb-20 md:mb-0.5"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -243,7 +259,9 @@ export function QuizSetup({ subject, domains, onBack, onStart }: QuizSetupProps)
                       key={option.value}
                       variant={filters[key as keyof typeof filters] === option.value ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setFilters((prev) => ({ ...prev, [key]: option.value }))}
+                      onClick={() =>
+                        setFilters((prev) => ({ ...prev, [key]: option.value } as { difficulty: "all" | "E" | "M" | "H" }))
+                      }
                       className={cn(
                         "h-6 px-2 text-xs rounded-lg",
                         filters[key as keyof typeof filters] === option.value

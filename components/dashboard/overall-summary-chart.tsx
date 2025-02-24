@@ -40,7 +40,7 @@ const OverallSummaryChart = ({ data }: OverallSummaryChartProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card>
+      <Card className="bg-white/70 dark:bg-slate-800/70">
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Questions Solved</h3>
           <DonutChart
@@ -53,7 +53,7 @@ const OverallSummaryChart = ({ data }: OverallSummaryChartProps) => {
           />
         </CardContent>
       </Card>
-      <Card>
+      <Card className="bg-white/70 dark:bg-slate-800/70">
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Success Rate & Attempts</h3>
           <BarChart
